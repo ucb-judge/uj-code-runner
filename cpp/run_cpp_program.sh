@@ -31,7 +31,9 @@ if [ $exit_status -eq 124 ]; then
 fi
 
 # Run the program a second time to get the memory usage in KB
-memory_usage=$("$program" < "$input_file" | ps -o rss= -p $(pgrep "$(basename "$program")") )
+memory_usage=$("$program" < "$input_file" 2>/dev/null | ps -o rss= -p $(pgrep -f "$program"))
+# Get only the second line of the output
+memory_usage=$(echo "$memory_usage" | sed -n '2p')
 # Compare memory usage with the memory limit
 if [ $memory_usage -gt $memory_limit ]; then
   echo "Memory limit exceeded by $((memory_usage - memory_limit)) KB"

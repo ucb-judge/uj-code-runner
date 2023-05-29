@@ -14,6 +14,9 @@ memory_limit="$5"
 # Get the execution time of the program beginning from the start of its execution
 start_time=$(date +%s.%N)
 # Run the program a second time to get the execution time in seconds
+cd "$(dirname "$program")"
+program="$(basename "$program")"
+
 timeout "$timeout_duration"s java "$program" < "$input_file" > "$output_file" 2>/dev/null
 exit_status=$?
 end_time=$(date +%s.%N)
@@ -31,7 +34,9 @@ if [ $exit_status -eq 124 ]; then
 fi
 
 # Run the program a second time to get the memory usage in KB
-memory_usage=$(java "$program" < "$input_file" | ps -o rss= -p $(pgrep "$(basename "$program")") )
+memory_usage=$(java "$program" < "$input_file" 2>/dev/null | ps -o rss= -p $(pgrep -f "$program"))
+# Get only the third line of the output
+memory_usage=$(echo "$memory_usage" | sed -n '3p')
 # Compare memory usage with the memory limit
 if [ $memory_usage -gt $memory_limit ]; then
   echo "Memory limit exceeded by $((memory_usage - memory_limit)) KB"
