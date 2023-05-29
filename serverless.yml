@@ -12,6 +12,9 @@ provider:
         path: ./
   stage: dev
   region: us-west-1
+  apiGateway:
+    apiKeys:
+      - ujApiKey
 
 functions:
   cpp:
@@ -21,12 +24,13 @@ functions:
         - app.cpp_handler
       entryPoint:
         - "/lambda-entrypoint.sh"
-    timeout: 10
+    timeout: 30
     memorySize: 1024
     events:
       - http:
           path: /code-runner/cpp
           method: post
+          private: true
   java:
     image:
       name: appimage
@@ -34,12 +38,13 @@ functions:
         - app.java_handler
       entryPoint:
         - "/lambda-entrypoint.sh"
-    timeout: 10
+    timeout: 30
     memorySize: 1024
     events:
       - http:
           path: /code-runner/java
           method: post
+          private: true
   python:
     image:
       name: appimage
@@ -47,9 +52,10 @@ functions:
         - app.python_handler
       entryPoint:
         - "/lambda-entrypoint.sh"
-    timeout: 10
+    timeout: 30
     memorySize: 1024
     events:
       - http:
           path: /code-runner/python
           method: post
+          private: true

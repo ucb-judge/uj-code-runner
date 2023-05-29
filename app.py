@@ -110,8 +110,6 @@ def java_handler(event, context):
     # Get the memoryLimit from the request body in KB
     memory_limit = int(form_data['memoryLimit'][0]) * 1024
     
-    # Rename whichever the public class is to the name of the file
-    subprocess.run(['sed', '-i', '-e', 's/public class [A-Za-z0-9_]* {/public class $(basename $(dirname source_code_filepath)) {/g', source_code_filepath])
     # Compile the Java code using ./java/compile_java.sh
     compilation_result = subprocess.run(['./java/compile_java.sh', source_code_filepath], capture_output=True)
     compilation_error = check_compilation_result(compilation_result)
@@ -294,7 +292,7 @@ def check_execution_result(execution_result):
             },
             'body': json.dumps({
                 'message': 'Execution failed',
-                'data': execution_result.stderr.decode('utf-8')
+                'data': execution_result.stdout.decode('utf-8')
             })
         }
     return None
@@ -312,8 +310,8 @@ def check_execution_result(execution_result):
 def success_response (execution_result, output_filepath):
     
     # Memory usage and execution time are printed on the first two lines of the output
-    memory_usage = execution_result.stdout.decode('utf-8').split('\n')[0]
-    execution_time = execution_result.stdout.decode('utf-8').split('\n')[1]
+    memory_usage = execution_result.stdout.decode('utf-8').split('\n')[0].split(':')[1]
+    execution_time = execution_result.stdout.decode('utf-8').split('\n')[1].split(':')[1]
     memory_usage = float(memory_usage) / 1024
     execution_time = float(execution_time)
     
@@ -321,6 +319,13 @@ def success_response (execution_result, output_filepath):
     with open(output_filepath, 'r') as file:
         output = file.read()
 
+    data = {
+        "output": output,
+        "memory_usage": memory_usage,
+        "execution_time": execution_time
+    }
+    print('data=', data)
+    
     return {
         'statusCode': 200,
         'headers': {
@@ -328,11 +333,7 @@ def success_response (execution_result, output_filepath):
         },
         'body': json.dumps({
             'message': 'Execution successful',
-            'data': json.dumps({
-                'output': output,
-                'memory_usage': memory_usage,
-                'execution_time': execution_time
-            })
-        })
+            'data': data
+        }, indent=4)
     }
                            

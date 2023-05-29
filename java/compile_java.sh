@@ -8,7 +8,11 @@ fi
 java_file="$1"
 executable="${java_file%.*}"
 
-javac -d . "$java_file"
+base_name="$(basename "$java_file" .java)"
+chmod 777 "$java_file"
+sed -i 's/public class [^ ]\+/public class '"$base_name"'/g' "$java_file"
+
+javac "$java_file"
 
 if [ $? -eq 0 ]; then
   echo "Compilation successful"

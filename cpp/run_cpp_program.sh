@@ -14,7 +14,7 @@ memory_limit="$5"
 # Get the execution time of the program beginning from the start of its execution
 start_time=$(date +%s.%N)
 # Run the program a second time to get the execution time in seconds
-timeout "$timeout_duration"s ./"$program" < "$input_file" > "$output_file" 2>/dev/null
+timeout "$timeout_duration"s "$program" < "$input_file" > "$output_file" 2>/dev/null
 exit_status=$?
 end_time=$(date +%s.%N)
 
@@ -31,7 +31,7 @@ if [ $exit_status -eq 124 ]; then
 fi
 
 # Run the program a second time to get the memory usage in KB
-memory_usage=$(ps -o rss= -p $(pgrep "$program"))
+memory_usage=$("$program" < "$input_file" | ps -o rss= -p $(pgrep "$(basename "$program")") )
 # Compare memory usage with the memory limit
 if [ $memory_usage -gt $memory_limit ]; then
   echo "Memory limit exceeded by $((memory_usage - memory_limit)) KB"
