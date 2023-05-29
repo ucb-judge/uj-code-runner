@@ -55,12 +55,39 @@ provider:
 #    variable1: value1
 
 functions:
-  hello:
+  cpp:
     image:
       name: appimage
-    #    The following are a few example events you can configure
-    #    NOTE: Please make sure to change your handler code to work with those events
-    #    Check the event documentation for details
+      command:
+        - app.cpp_handler
+      entryPoint:
+        - "/lambda-entrypoint.sh"
+    timeout: 10
+    memorySize: 1024
+    events:
+      - http:
+          path: code-runner
+          method: post
+  java:
+    image:
+      name: appimage
+      command:
+        - app.java_handler
+      entryPoint:
+        - "/lambda-entrypoint.sh"
+    timeout: 10
+    memorySize: 1024
+    events:
+      - http:
+          path: code-runner
+          method: post
+  python:
+    image:
+      name: appimage
+      command:
+        - app.python_handler
+      entryPoint:
+        - "/lambda-entrypoint.sh"
     timeout: 10
     memorySize: 1024
     events:
