@@ -31,7 +31,7 @@ if [ $exit_status -eq 124 ]; then
 fi
 
 # Run the program a second time to get the memory usage in KB
-memory_usage=$(java "$program" < "$input_file" > "$output_file" 2>/dev/null & disown && cat /proc/$!/"status" | awk '/VmRSS/ {print $2}')
+memory_usage=$(ps -o rss= -p $(pgrep "$program"))
 # Compare memory usage with the memory limit
 if [ $memory_usage -gt $memory_limit ]; then
   echo "Memory limit exceeded by $((memory_usage - memory_limit)) KB"

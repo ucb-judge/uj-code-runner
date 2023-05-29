@@ -43,7 +43,7 @@ def cpp_handler(event, context):
     
     # Save the uploaded sourceCode file to a temporary location
     with tempfile.NamedTemporaryFile(suffix='.cpp', delete=False) as file:
-        file.write(form_data['code'][0])
+        file.write(form_data['sourceCode'][0])
         source_code_filepath = file.name
     # Save the uploaded input file to a temporary location
     with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
@@ -52,7 +52,11 @@ def cpp_handler(event, context):
     # Create a temporary file to store the output
     with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
         output_filepath = file.name
-    
+    # Get the timeLimit from the request body
+    time_limit = int(form_data['timeLimit'][0])
+    # Get the memoryLimit from the request body in KB
+    memory_limit = int(form_data['memoryLimit'][0]) * 1024
+
     # Compile the C++ code using ./cpp/compile_cpp.sh
     compilation_result = subprocess.run(['./cpp/compile_cpp.sh', source_code_filepath], capture_output=True)
     compilation_error = check_compilation_result(compilation_result)
@@ -61,7 +65,7 @@ def cpp_handler(event, context):
  
     # Run the compiled binary using ./cpp/run_cpp_program.sh
     compiled_source_code_filepath = re.sub(r'\.cpp$', '', source_code_filepath)
-    execution_result = subprocess.run(['./cpp/run_cpp_program.sh', compiled_source_code_filepath, input_filepath, output_filepath], capture_output=True)
+    execution_result = subprocess.run(['./cpp/run_cpp_program.sh', compiled_source_code_filepath, input_filepath, output_filepath, str(time_limit), str(memory_limit)], capture_output=True)
     execution_error = check_execution_result(execution_result)
     if execution_error != None:
         return execution_error    
@@ -69,7 +73,112 @@ def cpp_handler(event, context):
     # Successfully executed the program
     return success_response (execution_result, output_filepath)
     
+'''
+    Handle the request to run a Java program
+    
+    Parameters:
+        event (dict): The event payload
+        context (dict): The context payload
+        
+    Returns:
+        A response object
+'''
+def java_handler(event, context):
+    # Validate if the request body is empty
+    request = validate_empty_request(event)
+    if request != None:
+        return request
+    
+    # Parse the multipart form data from the request body
+    form_data = get_form_data(event)
+    if 'statusCode' in form_data:
+        return form_data
+    
+    # Save the uploaded sourceCode file to a temporary location called Main.java
+    with tempfile.NamedTemporaryFile(suffix='.java', delete=False) as file:
+        file.write(form_data['sourceCode'][0])
+        source_code_filepath = file.name
+    # Save the uploaded input file to a temporary location
+    with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
+        file.write(form_data['input'][0])
+        input_filepath = file.name
+    # Create a temporary file to store the output
+    with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
+        output_filepath = file.name
+    # Get the timeLimit from the request body
+    time_limit = int(form_data['timeLimit'][0])
+    # Get the memoryLimit from the request body in KB
+    memory_limit = int(form_data['memoryLimit'][0]) * 1024
+    
+    # Rename whichever the public class is to the name of the file
+    subprocess.run(['sed', '-i', '-e', 's/public class [A-Za-z0-9_]* {/public class $(basename $(dirname source_code_filepath)) {/g', source_code_filepath])
+    # Compile the Java code using ./java/compile_java.sh
+    compilation_result = subprocess.run(['./java/compile_java.sh', source_code_filepath], capture_output=True)
+    compilation_error = check_compilation_result(compilation_result)
+    if compilation_error != None:
+        return compilation_error
+ 
+    # Run the compiled binary using ./java/run_java_program.sh
+    compiled_source_code_filepath = re.sub(r'\.java$', '', source_code_filepath)
+    execution_result = subprocess.run(['./java/run_java_program.sh', compiled_source_code_filepath, input_filepath, output_filepath, str(time_limit), str(memory_limit)], capture_output=True)
+    execution_error = check_execution_result(execution_result)
+    if execution_error != None:
+        return execution_error    
+    
+    # Successfully executed the program
+    return success_response (execution_result, output_filepath)
 
+'''
+    Handle the request to run a Pyhon program
+    
+    Parameters:
+        event (dict): The event payload
+        context (dict): The context payload
+        
+    Returns:
+        A response object
+'''
+def python_handler(event, context):
+    # Validate if the request body is empty
+    request = validate_empty_request(event)
+    if request != None:
+        return request
+    
+    # Parse the multipart form data from the request body
+    form_data = get_form_data(event)
+    if 'statusCode' in form_data:
+        return form_data
+    
+    # Save the uploaded sourceCode file to a temporary location
+    with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as file:
+        file.write(form_data['sourceCode'][0])
+        source_code_filepath = file.name
+    # Save the uploaded input file to a temporary location
+    with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
+        file.write(form_data['input'][0])
+        input_filepath = file.name
+    # Create a temporary file to store the output
+    with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
+        output_filepath = file.name
+    # Get the timeLimit from the request body
+    time_limit = int(form_data['timeLimit'][0])
+    # Get the memoryLimit from the request body in KB
+    memory_limit = int(form_data['memoryLimit'][0]) * 1024
+    
+    # Compile the Pyhton code using ./python/compile_python.sh
+    compilation_result = subprocess.run(['./python/compile_python.sh', source_code_filepath], capture_output=True)
+    compilation_error = check_compilation_result(compilation_result)
+    if compilation_error != None:
+        return compilation_error
+ 
+    # Run the compiled binary using ./python/run_python_program.sh
+    execution_result = subprocess.run(['./python/run_python_program.sh', source_code_filepath, input_filepath, output_filepath, str(time_limit), str(memory_limit)], capture_output=True)
+    execution_error = check_execution_result(execution_result)
+    if execution_error != None:
+        return execution_error    
+    
+    # Successfully executed the program
+    return success_response (execution_result, output_filepath)
 
 '''
     Validate if the request body is empty
@@ -202,8 +311,12 @@ def check_execution_result(execution_result):
 '''
 def success_response (execution_result, output_filepath):
     
+    # Memory usage and execution time are printed on the first two lines of the output
     memory_usage = execution_result.stdout.decode('utf-8').split('\n')[0]
     execution_time = execution_result.stdout.decode('utf-8').split('\n')[1]
+    memory_usage = float(memory_usage) / 1024
+    execution_time = float(execution_time)
+    
     # Read the output file
     with open(output_filepath, 'r') as file:
         output = file.read()

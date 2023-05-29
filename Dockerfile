@@ -3,9 +3,9 @@ FROM --platform=linux/amd64 public.ecr.aws/lambda/python:3.8
 RUN yum install -y gcc-c++ epel-release centos-release-scl clang-tools-extra
 RUN yum install -y bc
 # Include Java 11
-RUN yum install -y java-11-openjdk-devel
+RUN yum install -y java-17-amazon-corretto-devel
 # Include Python 3.8
-RUN yum install -y python38
+# RUN yum install -y python
 
 # Copy function code
 COPY app.py ./
