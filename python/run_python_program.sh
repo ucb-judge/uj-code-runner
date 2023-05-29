@@ -21,11 +21,13 @@ end_time=$(date +%s.%N)
 # Check if the program exceeded the memory limit
 if [ $exit_status -eq 137 ]; then
   echo "Memory limit exceeded"
+  exit 1
 fi
 
 # Check if the program was terminated due to a timeout
 if [ $exit_status -eq 124 ]; then
   echo "Timeout"
+  exit 1
 fi
 
 # Run the program a second time to get the memory usage in KB
