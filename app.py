@@ -53,7 +53,7 @@ def cpp_handler(event, context):
     with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
         output_filepath = file.name
     # Get the timeLimit from the request body
-    time_limit = int(form_data['timeLimit'][0])
+    time_limit = float(form_data['timeLimit'][0])
     # Get the memoryLimit from the request body in KB
     memory_limit = int(form_data['memoryLimit'][0]) * 1024
 
@@ -105,8 +105,8 @@ def java_handler(event, context):
     # Create a temporary file to store the output
     with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
         output_filepath = file.name
-    # Get the timeLimit from the request body
-    time_limit = int(form_data['timeLimit'][0])
+    # Get the timeLimit from the request body 
+    time_limit = float(form_data['timeLimit'][0])
     # Get the memoryLimit from the request body in KB
     memory_limit = int(form_data['memoryLimit'][0]) * 1024
     
@@ -159,7 +159,7 @@ def python_handler(event, context):
     with tempfile.NamedTemporaryFile(suffix='.txt', delete=False) as file:
         output_filepath = file.name
     # Get the timeLimit from the request body
-    time_limit = int(form_data['timeLimit'][0])
+    time_limit = float(form_data['timeLimit'][0])
     # Get the memoryLimit from the request body in KB
     memory_limit = int(form_data['memoryLimit'][0]) * 1024
     
